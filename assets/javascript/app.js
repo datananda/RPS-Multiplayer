@@ -15,16 +15,37 @@ const database = firebase.database();
 let numActivePlayers = 0;
 let currentPlayer = "";
 
-database.ref().on("value", (snapshot) => {
-    console.log(snapshot.numChildren());
+// connectionsInfo.on("value", (snapshot) => {
+//     if (snapshot.val()) {
+//         const newConnection = connections.push(true);
+//         newConnection.onDisconnect().remove();
+//     }
+// });
+
+// connections.on("value", (snapshot) => {
+//     // numLiveUsers = snapshot.numChildren();
+//     console.log(snapshot.numChildren());
+// });
+
+database.ref("/players").on("value", (snapshot) => {
+    console.log(snapshot.val());
+    Object.keys(snapshot.val()).forEach((key) => {
+        console.log(key);
+    });
     numActivePlayers = snapshot.numChildren();
+    if (numActivePlayers === 2) {
+        // start game play!
+        console.log("start the game!");
+    }
+    // const currentPlayerDiv = $(`#${currentPlayer}-container`);
+    // currentPlayerDiv.append($("<h3>").text(inputName));
+    // currentPlayerDiv.append($("<p>").text("Wins: 0 Losses: 0"));
 }, (errorObject) => {
     console.log(`The read failed: ${errorObject.code}`);
 });
 
 $("#name-submit").on("click", (e) => {
     e.preventDefault();
-    console.log("submitting name");
     const inputName = $("#name-input").val();
     const playerObj = {};
     playerObj[numActivePlayers] = {
@@ -32,18 +53,23 @@ $("#name-submit").on("click", (e) => {
         losses: 0,
         wins: 0,
     };
-    console.log(playerObj);
+    $("#name-entry").remove();
     if (numActivePlayers < 2) {
-        database.ref().child(`player${numActivePlayers + 1}`).set({
+        database.ref("/players").child(`player${numActivePlayers + 1}`).set({
             name: inputName,
             losses: 0,
-            winds: 0,
+            wins: 0,
         });
         currentPlayer = `player${numActivePlayers}`;
+        $("header").append($("<h2>").text(`Welcome ${inputName}! You are player ${numActivePlayers}.`));
     } else {
         console.log("no more players allowed");
+        $("header").append($("<h2>").text("I'm sorry. This game is full. Try back later."));
     }
-    numActivePlayers++;
 
     $("#name-input").val("");
+});
+
+window.addEventListener("unload", () => {
+    database.ref("/players").child(currentPlayer).remove();
 });

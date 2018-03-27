@@ -10,9 +10,25 @@
 </head>
 
 <body>
-    <input type="text" id="name-input">
-    <input type="submit" id="name-submit">
-    <h1></h1>
+    <header>
+        <h1>Rock Paper Scissors</h1>
+        <form id="name-entry">
+            <input type="text" id="name-input">
+            <input type="submit" id="name-submit">
+        </form>
+    </header>
+    <main>
+        <div id="player1-container">
+            <h3>Waiting for Player 1</h3>
+        </div>
+        <div id="result-container">
+
+        </div>
+        <div id="player2-container">
+            <h3>Waiting for Player 2</h3>
+        </div>
+    </main>
+
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
     <script src="assets/javascript/app.js"></script>
