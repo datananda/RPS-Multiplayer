@@ -10,29 +10,40 @@ const config = {
 firebase.initializeApp(config);
 
 const database = firebase.database();
-const connections = database.ref("/connections");
-const connectionsInfo = database.ref(".info/connected");
-const rpsGame = {
-    numLiveUsers: 0,
-    printStatus() {
-        if (this.numLiveUsers === 0) {
-            console.log("waiting for player 1");
-        } else if (this.numLiveUsers === 1) {
-            console.log("waiting for player 2");
-        } else {
-            console.log("no more players allowed");
-        }
-    },
-};
+// const connections = database.ref("/connections");
+// const connectionsInfo = database.ref(".info/connected");
+let numActivePlayers = 0;
+let currentPlayer = "";
 
-connectionsInfo.on("value", (snapshot) => {
-    if (snapshot.val()) {
-        const newConnection = connections.push(true);
-        newConnection.onDisconnect().remove();
-    }
+database.ref().on("value", (snapshot) => {
+    console.log(snapshot.numChildren());
+    numActivePlayers = snapshot.numChildren();
+}, (errorObject) => {
+    console.log(`The read failed: ${errorObject.code}`);
 });
 
-connections.on("value", (snapshot) => {
-    rpsGame.numLiveUsers = snapshot.numChildren();
-    rpsGame.printStatus();
+$("#name-submit").on("click", (e) => {
+    e.preventDefault();
+    console.log("submitting name");
+    const inputName = $("#name-input").val();
+    const playerObj = {};
+    playerObj[numActivePlayers] = {
+        name: inputName,
+        losses: 0,
+        wins: 0,
+    };
+    console.log(playerObj);
+    if (numActivePlayers < 2) {
+        database.ref().child(`player${numActivePlayers + 1}`).set({
+            name: inputName,
+            losses: 0,
+            winds: 0,
+        });
+        currentPlayer = `player${numActivePlayers}`;
+    } else {
+        console.log("no more players allowed");
+    }
+    numActivePlayers++;
+
+    $("#name-input").val("");
 });
