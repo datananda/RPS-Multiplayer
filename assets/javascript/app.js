@@ -10,36 +10,50 @@ const config = {
 firebase.initializeApp(config);
 
 const database = firebase.database();
-// const connections = database.ref("/connections");
-// const connectionsInfo = database.ref(".info/connected");
 let numActivePlayers = 0;
 let currentPlayer = "";
+let currentTurn = 1;
 
-// connectionsInfo.on("value", (snapshot) => {
-//     if (snapshot.val()) {
-//         const newConnection = connections.push(true);
-//         newConnection.onDisconnect().remove();
-//     }
-// });
 
-// connections.on("value", (snapshot) => {
-//     // numLiveUsers = snapshot.numChildren();
-//     console.log(snapshot.numChildren());
-// });
+function initializePlayer(i, inputName) {
+    database.ref("/players").child(`player${i}`).set({
+        name: inputName,
+        losses: 0,
+        wins: 0,
+    });
+    currentPlayer = `player${i}`;
+    $("header").append($("<h2>").text(`Welcome ${inputName}! You are player ${i}.`));
+}
 
 database.ref("/players").on("value", (snapshot) => {
-    console.log(snapshot.val());
-    Object.keys(snapshot.val()).forEach((key) => {
-        console.log(key);
-    });
+    console.log("db change");
     numActivePlayers = snapshot.numChildren();
-    if (numActivePlayers === 2) {
-        // start game play!
-        console.log("start the game!");
+    if (snapshot.val()) {
+        for (let i = 1; i < 3; i++) {
+            if (`player${i}` in snapshot.val()) {
+                const playerData = snapshot.val()[`player${i}`];
+                $(`#player${i}-container > h3`).text(playerData.name);
+                $(`#player${i}-container > p`).text(`Wins: ${playerData.wins} Losses: ${playerData.losses}`);
+            } else {
+                $(`#player${i}-container > h3`).text(`Waiting for Player ${i}`);
+                $(`#player${i}-container > p`).text("");
+            }
+        }
+    } else {
+        $("#player1-container > h3").text("Waiting for Player 1");
+        $("#player2-container > h3").text("Waiting for Player 2");
+        $("#player1-container > p").text("");
+        $("#player2-container > p").text("");
     }
-    // const currentPlayerDiv = $(`#${currentPlayer}-container`);
-    // currentPlayerDiv.append($("<h3>").text(inputName));
-    // currentPlayerDiv.append($("<p>").text("Wins: 0 Losses: 0"));
+}, (errorObject) => {
+    console.log(`The read failed: ${errorObject.code}`);
+});
+
+database.ref("/currentTurn").on("value", (snapshot) => {
+    console.log("currentTurn", snapshot.val());
+    if (parseInt(currentPlayer.slice(-1), 10) === currentTurn) {
+        $(`#player${snapshot.val()}-buttons`).show();
+    }
 }, (errorObject) => {
     console.log(`The read failed: ${errorObject.code}`);
 });
@@ -47,29 +61,29 @@ database.ref("/players").on("value", (snapshot) => {
 $("#name-submit").on("click", (e) => {
     e.preventDefault();
     const inputName = $("#name-input").val();
-    const playerObj = {};
-    playerObj[numActivePlayers] = {
-        name: inputName,
-        losses: 0,
-        wins: 0,
-    };
     $("#name-entry").remove();
-    if (numActivePlayers < 2) {
-        database.ref("/players").child(`player${numActivePlayers + 1}`).set({
-            name: inputName,
-            losses: 0,
-            wins: 0,
-        });
-        currentPlayer = `player${numActivePlayers}`;
-        $("header").append($("<h2>").text(`Welcome ${inputName}! You are player ${numActivePlayers}.`));
+    if (numActivePlayers === 0) {
+        initializePlayer(1, inputName);
+    } else if (numActivePlayers === 1) {
+        console.log("hello");
+        initializePlayer(2, inputName);
+        database.ref("/currentTurn").set(currentTurn);
     } else {
         console.log("no more players allowed");
         $("header").append($("<h2>").text("I'm sorry. This game is full. Try back later."));
     }
-
     $("#name-input").val("");
 });
 
+$("#player1-buttons").on("click", "button", function () {
+    console.log($(this).text());
+    database.ref(`/players/${currentPlayer}`).child("choice").set($(this).text());
+});
+
 window.addEventListener("unload", () => {
-    database.ref("/players").child(currentPlayer).remove();
+    console.log("exiting");
+    if (currentPlayer) {
+        database.ref("/players").child(currentPlayer).remove();
+        database.ref("/currentTurn").remove();
+    }
 });
