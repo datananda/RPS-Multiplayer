@@ -12,8 +12,6 @@ firebase.initializeApp(config);
 const database = firebase.database();
 let numActivePlayers = 0;
 let currentPlayer = "";
-let currentTurn = 1;
-
 
 function initializePlayer(i, inputName) {
     database.ref("/players").child(`player${i}`).set({
@@ -25,34 +23,83 @@ function initializePlayer(i, inputName) {
     $("header").append($("<h2>").text(`Welcome ${inputName}! You are player ${i}.`));
 }
 
+function checkResult(choice1, choice2) {
+    if (choice1 === "rock") {
+        if (choice2 === "paper") {
+            return "player 2 wins";
+        } else if (choice2 === "scissors") {
+            return "player 1 wins";
+        }
+    } else if (choice1 === "paper") {
+        if (choice2 === "rock") {
+            return "player 1 wins";
+        } else if (choice2 === "scissors") {
+            return "player 2 wins";
+        }
+    } else if (choice1 === "scissors") {
+        if (choice2 === "rock") {
+            return "player 2 wins";
+        } else if (choice2 === "paper") {
+            return "player 1 wins";
+        }
+    }
+    return "tie game";
+}
+
+function updatePlayerData(i, name, wins, losses) {
+    $(`#player${i}-container > h3`).text(name);
+    $(`#player${i}-container > p`).text(`Wins: ${wins} Losses: ${losses}`);
+}
+
+function removePlayerData(i) {
+    $(`#player${i}-container > h3`).text(`Waiting for Player ${i}`);
+    $(`#player${i}-container > p`).text("");
+}
+
+function getNextTurn(i) {
+    if (i === 1) {
+        return 2;
+    }
+    return 1;
+}
+
 database.ref("/players").on("value", (snapshot) => {
-    console.log("db change");
-    numActivePlayers = snapshot.numChildren();
-    if (snapshot.val()) {
+    const players = snapshot.val();
+    if (players) {
+        numActivePlayers = Object.keys(players).length;
         for (let i = 1; i < 3; i++) {
-            if (`player${i}` in snapshot.val()) {
-                const playerData = snapshot.val()[`player${i}`];
-                $(`#player${i}-container > h3`).text(playerData.name);
-                $(`#player${i}-container > p`).text(`Wins: ${playerData.wins} Losses: ${playerData.losses}`);
+            if (`player${i}` in players) {
+                const playerData = players[`player${i}`];
+                updatePlayerData(i, playerData.name, playerData.wins, playerData.losses);
             } else {
-                $(`#player${i}-container > h3`).text(`Waiting for Player ${i}`);
-                $(`#player${i}-container > p`).text("");
+                removePlayerData(i);
             }
         }
     } else {
-        $("#player1-container > h3").text("Waiting for Player 1");
-        $("#player2-container > h3").text("Waiting for Player 2");
-        $("#player1-container > p").text("");
-        $("#player2-container > p").text("");
+        numActivePlayers = 0;
+        removePlayerData(1);
+        removePlayerData(2);
     }
 }, (errorObject) => {
     console.log(`The read failed: ${errorObject.code}`);
 });
 
 database.ref("/currentTurn").on("value", (snapshot) => {
-    console.log("currentTurn", snapshot.val());
-    if (parseInt(currentPlayer.slice(-1), 10) === currentTurn) {
-        $(`#player${snapshot.val()}-buttons`).show();
+    const newTurn = snapshot.val();
+    const currentPlayerNum = parseInt(currentPlayer.slice(-1), 10);
+    if (newTurn === 1) {
+        let player1choice;
+        let player2choice;
+        database.ref("/players").once("value", (playerSnapshot) => {
+            player1choice = playerSnapshot.val().player1.choice;
+            player2choice = playerSnapshot.val().player2.choice;
+        });
+        if (player1choice) {
+            const result = checkResult(player1choice.toLowerCase(), player2choice.toLowerCase());
+        }
+    }
+    if (currentPlayerNum === newTurn) {
+        $("#choice-buttons").appendTo(`#player${currentPlayerNum}-container`).show();
     }
 }, (errorObject) => {
     console.log(`The read failed: ${errorObject.code}`);
@@ -61,29 +108,32 @@ database.ref("/currentTurn").on("value", (snapshot) => {
 $("#name-submit").on("click", (e) => {
     e.preventDefault();
     const inputName = $("#name-input").val();
-    $("#name-entry").remove();
+    $("#name-entry").hide();
     if (numActivePlayers === 0) {
         initializePlayer(1, inputName);
     } else if (numActivePlayers === 1) {
-        console.log("hello");
         initializePlayer(2, inputName);
-        database.ref("/currentTurn").set(currentTurn);
+        database.ref("/currentTurn").set(1);
     } else {
-        console.log("no more players allowed");
         $("header").append($("<h2>").text("I'm sorry. This game is full. Try back later."));
     }
     $("#name-input").val("");
 });
 
-$("#player1-buttons").on("click", "button", function () {
-    console.log($(this).text());
+$("#choice-buttons").on("click", "button", function () {
     database.ref(`/players/${currentPlayer}`).child("choice").set($(this).text());
+    $("#choice-buttons").hide();
+    database.ref("/currentTurn").transaction((currentTurn) => {
+        return getNextTurn(currentTurn);
+    });
 });
 
 window.addEventListener("unload", () => {
-    console.log("exiting");
+    console.log("remove player", currentPlayer);
     if (currentPlayer) {
         database.ref("/players").child(currentPlayer).remove();
-        database.ref("/currentTurn").remove();
     }
+    console.log("remove current turn");
+    database.ref("/currentTurn").remove();
+    console.log("current turn removed");
 });
