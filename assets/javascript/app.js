@@ -24,6 +24,7 @@ function initializePlayer(i, inputName) {
 }
 
 function checkResult(choice1, choice2) {
+    console.log("check result");
     if (choice1 === "rock") {
         if (choice2 === "paper") {
             return "player 2 wins";
@@ -47,6 +48,7 @@ function checkResult(choice1, choice2) {
 }
 
 function updatePlayerData(i, name, wins, losses) {
+    console.log("updating player data. wins:", wins);
     $(`#player${i}-container > h3`).text(name);
     $(`#player${i}-container > p`).text(`Wins: ${wins} Losses: ${losses}`);
 }
@@ -57,8 +59,8 @@ function removePlayerData(i) {
 }
 
 function getNextTurn(i) {
-    if (i === 1) {
-        return 2;
+    if (i < 3) {
+        return i + 1;
     }
     return 1;
 }
@@ -85,20 +87,45 @@ database.ref("/players").on("value", (snapshot) => {
 });
 
 database.ref("/currentTurn").on("value", (snapshot) => {
-    const newTurn = snapshot.val();
+    const newTurn = parseInt(snapshot.val(), 10);
     const currentPlayerNum = parseInt(currentPlayer.slice(-1), 10);
-    if (newTurn === 1) {
+    if (newTurn === 3) {
+        console.log("if");
         let player1choice;
         let player2choice;
         database.ref("/players").once("value", (playerSnapshot) => {
+            console.log("get choices");
             player1choice = playerSnapshot.val().player1.choice;
             player2choice = playerSnapshot.val().player2.choice;
         });
-        if (player1choice) {
-            const result = checkResult(player1choice.toLowerCase(), player2choice.toLowerCase());
+        let result = checkResult(player1choice.toLowerCase(), player2choice.toLowerCase());
+        if (currentPlayerNum === 1) { // only transact for a single client. is there a better way to do this?
+            if (result === "player 1 wins") {
+                database.ref("/players").transaction((playerSnapshot) => {
+                    let newPlayerData = playerSnapshot;
+                    newPlayerData.player1.wins++;
+                    newPlayerData.player2.losses++;
+                    return newPlayerData;
+                });
+            } else if (result === "player 2 wins") {
+                database.ref("/players").transaction((playerSnapshot) => {
+                    let newPlayerData = playerSnapshot;
+                    newPlayerData.player2.wins++;
+                    newPlayerData.player1.losses++;
+                    return newPlayerData;
+                });
+            }
         }
-    }
-    if (currentPlayerNum === newTurn) {
+        $("#player1-container").append($("<h4>").text(player1choice));
+        $("#player2-container").append($("<h4>").text(player2choice));
+        $("#result-container").append($("<h4>").text(result));
+        setTimeout(() => {
+            $("#player1-container > h4").remove();
+            $("#player2-container > h4").remove();
+            $("#result-container > h4").remove();
+            database.ref("/currentTurn").set(1);
+        }, 3000);
+    } else if (currentPlayerNum === newTurn) {
         $("#choice-buttons").appendTo(`#player${currentPlayerNum}-container`).show();
     }
 }, (errorObject) => {
@@ -121,6 +148,7 @@ $("#name-submit").on("click", (e) => {
 });
 
 $("#choice-buttons").on("click", "button", function () {
+    console.log("clicked on choice buttons");
     database.ref(`/players/${currentPlayer}`).child("choice").set($(this).text());
     $("#choice-buttons").hide();
     database.ref("/currentTurn").transaction((currentTurn) => {
