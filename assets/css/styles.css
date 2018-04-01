@@ -80,5 +80,25 @@ span.badge {
 }
 
 #chats {
-    height: 300px;
+    height: 320px;
+    overflow: auto;
+}
+
+.chat-message {
+    padding: 2px 5px;
+    display: inline-block;
+    border-radius: 5px;
+    max-width: 66%;
+    clear: both;
+    margin-bottom: 0;
+}
+
+.player1-chat {
+    background-color: #00bcd4;
+    float: right;
+}
+
+.player2-chat {
+    background-color: #eeeeee;
+    float: left;
 }

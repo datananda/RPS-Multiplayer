@@ -118,7 +118,8 @@ database.ref().on("value", (snapshot) => {
         const currentTurn = snapshot.val().currentTurn;
         numActivePlayers = Object.keys(playerData).length;
         if (numActivePlayers === 1) {
-            $("#choice-buttons").hide();
+            $(".page-footer,.nav-content,#chat-container,#choice-buttons").hide();
+            $("#game-container").show();
             const activePlayer = Object.keys(playerData)[0];
             const activePlayerNum = playerTextToNum(Object.keys(playerData)[0]);
             const otherPlayerNum = getOtherPlayerNum(activePlayerNum);
@@ -175,113 +176,17 @@ database.ref().on("value", (snapshot) => {
         $("#name-submit").text("Sign in as player 1");
     }
 });
-// database.ref("/players").on("value", (snapshot) => {
-//     console.log("player db chang");
-//     const players = snapshot.val();
-//     if (players) {
-//         numActivePlayers = Object.keys(players).length;
-//         if (numActivePlayers === 1) {
-//             const activePlayerNum = parseInt(Object.keys(players)[0].slice(-1), 10);
-//             const otherPlayerNum = getOtherPlayerNum(activePlayerNum);
-//             console.log("Active Player Num", activePlayerNum);
-//             console.log("Other Player Num", otherPlayerNum);
-//             $("#login-message").text(`Player ${activePlayerNum} is waiting for an opponent.`);
-//             $("#name-submit").text(`Sign in as Player ${otherPlayerNum}`);
-//             $("#waiting-message .card-title").text("Waiting for a second player");
-//             if (currentPlayer === `player${activePlayerNum}`) {
-//                 $("#choice-buttons").hide();
-//                 $(".page-footer").hide();
-//                 $(".nav-content").hide();
-//                 $("#waiting-message").show();
-//             }
-//         } else {
-//             $("#login-message").text("Game is full. Try again later.");
-//             $("form").hide();
-//             $(".card-action").hide();
-//             if (currentPlayer) {
-//                 $(".page-footer").show();
-//                 $(".nav-content").show();
-//             }
-//         }
-//         for (let i = 1; i < 3; i++) {
-//             if (`player${i}` in players) {
-//                 const playerData = players[`player${i}`];
-//                 updatePlayerData(`player${i}`, playerData.wins, playerData.losses);
-//             }
-//         }
-//     } else {
-//         numActivePlayers = 0;
-//         $("#waiting-message .card-title").text("No players here yet.");
-//     }
-//     $("ul.tabs").tabs();
-// }, (errorObject) => {
-//     console.log(`The read failed: ${errorObject.code}`);
-// });
 
-// database.ref("/currentTurn").on("value", (snapshot) => {
-//     console.log("current turn db change");
-//     const newTurn = parseInt(snapshot.val(), 10);
-//     const currentPlayerNum = parseInt(currentPlayer.slice(-1), 10);
-//     if (newTurn === 3) {
-//         $("#waiting-message").show();
-//         let player1choice;
-//         let player2choice;
-//         let player1name;
-//         let player2name;
-//         database.ref("/players").once("value", (playerSnapshot) => {
-//             player1choice = playerSnapshot.val().player1.choice;
-//             player2choice = playerSnapshot.val().player2.choice;
-//             player1name = playerSnapshot.val().player1.name;
-//             player2name = playerSnapshot.val().player2.name;
-//         });
-//         const result = checkResult(player1choice, player2choice);
-//         if (currentPlayerNum === 1) { // only transact for a single client...better way?
-//             if (result === "player 1 wins") {
-//                 database.ref("/players").transaction((playerSnapshot) => {
-//                     const newPlayerData = playerSnapshot;
-//                     newPlayerData.player1.wins++;
-//                     newPlayerData.player2.losses++;
-//                     return newPlayerData;
-//                 });
-//             } else if (result === "player 2 wins") {
-//                 database.ref("/players").transaction((playerSnapshot) => {
-//                     const newPlayerData = playerSnapshot;
-//                     newPlayerData.player2.wins++;
-//                     newPlayerData.player1.losses++;
-//                     return newPlayerData;
-//                 });
-//             }
-//         }
-//         $(`#${player1choice}`).clone().addClass("temp").prependTo("#waiting-message .col");
-//         $(`#waiting-message #${player1choice} .card-title`).text(`${player1name} chooses ${player1choice}`);
-//         $(`#${player2choice}`).clone().addClass("temp").appendTo("#waiting-message .col");
-//         $(`#waiting-message #${player2choice} .card-title`).text(`${player2name} chooses ${player2choice}`);
-//         $(".progress").hide();
-//         $("#waiting-message .card-content .card-title").text(`${result}`);
-//         setTimeout(() => {
-//             $("#waiting-message .temp").remove();
-//             $(".progress").show();
-//             database.ref("/currentTurn").set(1);
-//         }, 5000);
-//     } else if (currentPlayerNum === newTurn) {
-//         $("#waiting-message").hide();
-//         $("#choice-buttons").show();
-//     } else if (currentPlayerNum && !isNaN(newTurn)) {
-//         const otherPlayerNum = getOtherPlayerNum(currentPlayerNum);
-//         $("#waiting-message .card-title").text(`Waiting for player ${otherPlayerNum} to choose`);
-//         $("#waiting-message").show();
-//     }
-// }, (errorObject) => {
-//     console.log(`The read failed: ${errorObject.code}`);
-// });
-
-// database.ref("/chat").orderByChild("dateAdded").limitToLast(1).on("child_added", (snapshot) => {
-//     console.log("chats db change");
-//     const chats = snapshot.val();
-//     $("#chats").append($("<p>").text(snapshot.val().message));
-// }, (errorObject) => {
-//     console.log(`Errors handled: ${errorObject.code}`);
-// });
+database.ref("/chat").orderByChild("dateAdded").limitToLast(1).on("child_added", (snapshot) => {
+    const sentBy = snapshot.val().player;
+    $("#chats").append($("<p>").addClass(`chat-message ${sentBy}-chat`).text(snapshot.val().message));
+    if (currentPlayer !== sentBy) {
+        const numNewChats = parseInt($("#chat-tab .badge").text(), 10) + 1;
+        $("#chat-tab .badge").text(numNewChats);
+    }
+}, (errorObject) => {
+    console.log(`Errors handled: ${errorObject.code}`);
+});
 
 /*-------------------------------------------------------------------------
 / CLICK EVENTS & LISTENERS
@@ -328,8 +233,14 @@ $("#game-tab").on("click", () => {
 
 window.addEventListener("unload", () => {
     if (currentPlayer) {
-        database.ref("/players").child(currentPlayer).remove();
-        database.ref("/currentTurn").remove();
-        database.ref("/chat").remove();
+        const updateData = {};
+        updateData["/currentTurn"] = null;
+        updateData["/chat"] = null;
+        updateData[`/players/${currentPlayer}`] = null;
+        database.ref().update(updateData, (errorObject) => {
+            if (errorObject) {
+                console.log(`Errors handled: ${errorObject.code}`);
+            }
+        });
     }
 });
