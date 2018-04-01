@@ -52,9 +52,11 @@ function checkResult(choice1, choice2) {
     return "tie game";
 }
 
-function updatePlayerData(i, name, wins, losses) {
-    $(`#player${i}-container > h3`).text(name);
-    $(`#player${i}-container > p`).text(`Wins: ${wins} Losses: ${losses}`);
+function updatePlayerData(player, name, wins, losses) {
+    if (currentPlayer === player) {
+        $("#wins-number").text(wins);
+        $("#losses-number").text(losses);
+    }
 }
 
 function removePlayerData(i) {
@@ -85,7 +87,7 @@ database.ref("/players").on("value", (snapshot) => {
         for (let i = 1; i < 3; i++) {
             if (`player${i}` in players) {
                 const playerData = players[`player${i}`];
-                updatePlayerData(i, playerData.name, playerData.wins, playerData.losses);
+                updatePlayerData(`player${i}`, playerData.name, playerData.wins, playerData.losses);
             } else {
                 removePlayerData(i);
             }
@@ -103,13 +105,18 @@ database.ref("/currentTurn").on("value", (snapshot) => {
     const newTurn = parseInt(snapshot.val(), 10);
     const currentPlayerNum = parseInt(currentPlayer.slice(-1), 10);
     if (newTurn === 3) {
+        $("#waiting-message").show();
         let player1choice;
         let player2choice;
+        let player1name;
+        let player2name;
         database.ref("/players").once("value", (playerSnapshot) => {
             player1choice = playerSnapshot.val().player1.choice;
             player2choice = playerSnapshot.val().player2.choice;
+            player1name = playerSnapshot.val().player1.name;
+            player2name = playerSnapshot.val().player2.name;
         });
-        const result = checkResult(player1choice.toLowerCase(), player2choice.toLowerCase());
+        const result = checkResult(player1choice, player2choice);
         if (currentPlayerNum === 1) { // only transact for a single client...better way?
             if (result === "player 1 wins") {
                 database.ref("/players").transaction((playerSnapshot) => {
@@ -127,15 +134,17 @@ database.ref("/currentTurn").on("value", (snapshot) => {
                 });
             }
         }
-        $("#player1-container").append($("<h4>").text(player1choice));
-        $("#player2-container").append($("<h4>").text(player2choice));
-        $("#result-container").append($("<h4>").text(result));
+        $(`#${player1choice}`).clone().addClass("temp").prependTo("#waiting-message .col");
+        $(`#waiting-message #${player1choice} .card-title`).text(`${player1name} chooses ${player1choice}`);
+        $(`#${player2choice}`).clone().addClass("temp").appendTo("#waiting-message .col");
+        $(`#waiting-message #${player2choice} .card-title`).text(`${player2name} chooses ${player2choice}`);
+        $(".progress").hide();
+        $("#waiting-message .card-content .card-title").text(`${result}`);
         setTimeout(() => {
-            $("#player1-container > h4").remove();
-            $("#player2-container > h4").remove();
-            $("#result-container > h4").remove();
+            $("#waiting-message .temp").remove();
+            $(".progress").show();
             database.ref("/currentTurn").set(1);
-        }, 3000);
+        }, 5000);
     } else if (currentPlayerNum === newTurn) {
         $("#waiting-message").hide();
         $("#choice-buttons").show();
@@ -167,8 +176,6 @@ $("#name-submit").on("click", (e) => {
     } else if (numActivePlayers === 1) {
         initializePlayer(2, inputName);
         database.ref("/currentTurn").set(1);
-    } else {
-        $("header").append($("<h2>").text("I'm sorry. This game is full. Try back later."));
     }
     $("#name-input").val("");
 });
