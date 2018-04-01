@@ -13,7 +13,17 @@ const database = firebase.database();
 let numActivePlayers = 0;
 let currentPlayer = "";
 
-function initializePlayer(i, inputName) {
+function initializePlayer(inputName) {
+    let i = 1;
+    database.ref("/players").once("value", (playerSnapshot) => {
+        const players = playerSnapshot.val();
+        if (players) {
+            if (Object.keys(players).length === 1) {
+                const activePlayerNum = parseInt(Object.keys(players)[0].slice(-1), 10);
+                i = getOtherPlayerNum(activePlayerNum);
+            }
+        }
+    });
     database.ref("/players").child(`player${i}`).set({
         name: inputName,
         losses: 0,
@@ -27,6 +37,10 @@ function initializePlayer(i, inputName) {
         iText = "two";
     }
     $("#player-name").html($("<i>").addClass("material-icons right").text(`looks_${iText}`)).append(inputName);
+    if (currentPlayer === `player${i}`) {
+        $("#waiting-message .card-title").text("Waiting for a second player");
+        $("#waiting-message").show();
+    }
 }
 
 function checkResult(choice1, choice2) {
@@ -71,13 +85,26 @@ function getNextTurn(i) {
     return 1;
 }
 
+function getOtherPlayerNum(i) {
+    if (i === 1) {
+        return 2;
+    }
+    return 1;
+}
+
 database.ref("/players").on("value", (snapshot) => {
     const players = snapshot.val();
     if (players) {
         numActivePlayers = Object.keys(players).length;
         if (numActivePlayers === 1) {
-            $("#login-message").text("Player 1 is waiting for an opponent.");
-            $("#name-submit").text("Sign in as Player 2");
+            const activePlayerNum = Object.keys(players)[0].slice(-1);
+            const otherPlayerNum = getOtherPlayerNum(activePlayerNum);
+            $("#login-message").text(`Player ${activePlayerNum} is waiting for an opponent.`);
+            $("#name-submit").text(`Sign in as Player ${otherPlayerNum}`);
+            $("#waiting-message .card-title").text("Waiting for a second player");
+            if (currentPlayer === `player${activePlayerNum}`) {
+                $("#waiting-message").show();
+            }
         } else {
             $("#login-message").text("Game is full. Try again later.");
             $("form").hide();
@@ -148,8 +175,9 @@ database.ref("/currentTurn").on("value", (snapshot) => {
     } else if (currentPlayerNum === newTurn) {
         $("#waiting-message").hide();
         $("#choice-buttons").show();
-    } else if (currentPlayerNum) {
-        $("#waiting-message .card-title").text("Waiting for other player to choose");
+    } else if (currentPlayerNum && !isNaN(newTurn)) {
+        const otherPlayerNum = getOtherPlayerNum(currentPlayerNum);
+        $("#waiting-message .card-title").text(`Waiting for player ${otherPlayerNum} to choose`);
         $("#waiting-message").show();
     }
 }, (errorObject) => {
@@ -169,12 +197,9 @@ $("#name-submit").on("click", (e) => {
     const inputName = $("#name-input").val();
     $("#name-entry").hide();
     if (numActivePlayers === 0) {
-        initializePlayer(1, inputName);
-        if (currentPlayer === "player1") {
-            $("#waiting-message").show();
-        }
+        initializePlayer(inputName);
     } else if (numActivePlayers === 1) {
-        initializePlayer(2, inputName);
+        initializePlayer(inputName);
         database.ref("/currentTurn").set(1);
     }
     $("#name-input").val("");
@@ -197,13 +222,9 @@ $(".rps-button").on("click", function () {
 });
 
 window.addEventListener("unload", () => {
-    console.log("remove player", currentPlayer);
     if (currentPlayer) {
         database.ref("/players").child(currentPlayer).remove();
-        // player 2 becomes player 1
     }
-    console.log("remove current turn");
     database.ref("/currentTurn").remove();
     database.ref("/chat").remove();
-    console.log("current turn removed");
 });
