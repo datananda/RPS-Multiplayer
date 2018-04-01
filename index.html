@@ -15,7 +15,7 @@
 <body>
     <main>
         <div class="navbar-fixed">
-            <nav>
+            <nav class="nav-extended">
                 <div class="nav-wrapper cyan darken-4">
                     <a href="#" class="brand-logo left">RPS</a>
                     <ul id="nav-mobile" class="right">
@@ -24,66 +24,102 @@
                         </li>
                     </ul>
                 </div>
+                <div class="nav-content cyan darken-3" style="display: none;">
+                    <ul class="tabs tabs-transparent">
+                        <li class="tab" id="game-tab">
+                            <a class="active" href="#">Game</a>
+                        </li>
+                        <li class="tab" id="chat-tab">
+                            <a href="#">Chat
+                                <span class="new badge cyan darken-1">0</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </nav>
         </div>
-        <div class="container" id="name-entry">
-            <div class="row">
-                <div class="col s12">
-                    <div class="card">
-                        <div class="card-content">
-                            <span class="card-title" id="login-message">No players here yet.</span>
-                            <br>
-                            <form>
-                                <div class="input-field">
-                                    <input id="name-input" type="text" class="validate">
-                                    <label for="name-input">Enter your name</label>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="card-action blue-grey lighten-4">
-                            <a href="#" id="name-submit" class="black-text">Sign in as player 1</a>
+        <div id="game-container">
+            <div class="container" id="name-entry">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="card">
+                            <div class="card-content">
+                                <span class="card-title" id="login-message">No players here yet.</span>
+                                <br>
+                                <form id="name-form">
+                                    <div class="input-field">
+                                        <input id="name-input" type="text" class="validate">
+                                        <label for="name-input">Enter your name</label>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="card-action blue-grey lighten-4" id="sign-in-link">
+                                <a href="#" id="name-submit" class="black-text">Sign in as player 1</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="container" id="waiting-message" style="display: none;">
-            <div class="row">
-                <div class="col s12">
-                    <div class="card">
-                        <div class="card-content">
-                            <span class="card-title">Waiting for a second player</span>
-                            <br>
-                            <div class="progress">
-                                <div class="indeterminate"></div>
+            <div class="container" id="waiting-message" style="display: none;">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="card">
+                            <div class="card-content">
+                                <span class="card-title">Waiting for a second player</span>
+                                <br>
+                                <div class="progress">
+                                    <div class="indeterminate"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container" id="choice-buttons" style="display: none;">
+                <div class="row">
+                    <div class="col s12">
+                        <div class="card-title">Pick your weapon</div>
+                        <div class="card rps-button" id="rock">
+                            <div class="card-image">
+                                <img src="https://hypb.imgix.net/image/2017/06/dwayne-the-rock-johnson-is-our-generations-arnold-schwarzenegger-1.jpg">
+                                <span class="card-title">Dwayne "the Rock" Johnson</span>
+                            </div>
+                        </div>
+                        <div class="card rps-button" id="paper">
+                            <div class="card-image">
+                                <img src="https://ww2.kqed.org/wp-content/uploads/sites/12/2016/10/Atlanta.MAIN_-1038x576.jpg">
+                                <span class="card-title">Alfred "Paper Boi" Miles</span>
+                            </div>
+                        </div>
+                        <div class="card rps-button" id="scissors">
+                            <div class="card-image">
+                                <img src="https://www.bristolfilmfestival.com/wp-content/uploads/2018/01/Edward-Scissorhands.jpg">
+                                <span class="card-title">Edward Scissorhands</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="container" id="choice-buttons" style="display: none;">
-            <div class="row">
-                <div class="col s12">
-                    <div class="card-title">Pick your weapon</div>
-                    <div class="card rps-button" id="rock">
-                        <div class="card-image">
-                            <img src="https://hypb.imgix.net/image/2017/06/dwayne-the-rock-johnson-is-our-generations-arnold-schwarzenegger-1.jpg">
-                            <span class="card-title">Dwayne "the Rock" Johnson</span>
+        <div id="chat-container" style="display: none;">
+            <div class="container">
+                <div class="row">
+                    <form class="col s12">
+                        <div class="row">
+                            <div id="chats" class="col s12">
+
+                            </div>
+                            <div class="input-field col s12">
+                                <textarea id="chat-input" class="materialize-textarea"></textarea>
+                                <label for="chat-input">Message</label>
+                            </div>
+                            <div class="col s12">
+                                <button class="btn waves-effect waves-light" id="send-chat">Send Message
+                                    <i class="material-icons right">send</i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card rps-button" id="paper">
-                        <div class="card-image">
-                            <img src="https://ww2.kqed.org/wp-content/uploads/sites/12/2016/10/Atlanta.MAIN_-1038x576.jpg">
-                            <span class="card-title">Alfred "Paper Boi" Miles</span>
-                        </div>
-                    </div>
-                    <div class="card rps-button" id="scissors">
-                        <div class="card-image">
-                            <img src="https://www.bristolfilmfestival.com/wp-content/uploads/2018/01/Edward-Scissorhands.jpg">
-                            <span class="card-title">Edward Scissorhands</span>
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>

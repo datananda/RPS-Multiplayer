@@ -12,6 +12,7 @@ module.exports = {
         "quotes": [2, "double", "avoid-escape"],
         "prefer-destructuring": [0],
         "func-names": [0],
-        "no-plusplus": [0]
+        "no-plusplus": [0],
+        "no-lonely-if": [0],
     }
 };

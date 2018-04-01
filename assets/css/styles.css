@@ -38,7 +38,7 @@ span.badge {
 }
 
 .card-image {
-    height: 120px;
+    height: 115px;
     overflow: hidden;
 }
 
@@ -51,4 +51,34 @@ span.badge {
 .card-title {
     font-size: 24px;
     font-weight: 300;
+}
+
+.tabs {
+    height: 30px;
+}
+
+.tabs .tab {
+    line-height: 30px;
+    height: 30px;
+    width: 50%;
+}
+
+.row {
+    margin-bottom: 0;
+}
+
+.navbar-fixed {
+    height: 86px;
+}
+
+.input-field {
+    margin-bottom: 0;
+}
+
+#send-chat {
+    width: 100%;
+}
+
+#chats {
+    height: 300px;
 }
