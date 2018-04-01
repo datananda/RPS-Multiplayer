@@ -1,0 +1,54 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.page-footer {
+    padding-top: 14px;
+}
+
+.page-footer .row {
+    margin-bottom: 14px;
+}
+
+.page-footer ul {
+    margin: auto;
+    width: 125px;
+}
+
+span.badge {
+    margin-left: 0;
+}
+
+.brand-logo.left {
+    left: 15px!important;
+}
+
+#choice-buttons .card-action {
+    padding: 0;
+}
+
+#choice-buttons .collection {
+    margin-top: 0;
+}
+
+.card-image {
+    height: 120px;
+    overflow: hidden;
+}
+
+.card .card-image .card-title {
+    font-size: 18px;
+    bottom: -20px;
+    left: -14px;
+}
+
+.card-title {
+    font-size: 24px;
+    font-weight: 300;
+}

@@ -7,10 +7,104 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Rock Paper Scissors</title>
     <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/css/materialize.min.css">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 
 <body>
-    <header>
+    <main>
+        <div class="navbar-fixed">
+            <nav>
+                <div class="nav-wrapper cyan darken-4">
+                    <a href="#" class="brand-logo left">RPS</a>
+                    <ul id="nav-mobile" class="right">
+                        <li>
+                            <a href="#" id="player-name"></a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+        <div class="container" id="name-entry">
+            <div class="row">
+                <div class="col s12">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title" id="login-message">No players here yet.</span>
+                            <br>
+                            <form>
+                                <div class="input-field">
+                                    <input id="name-input" type="text" class="validate">
+                                    <label for="name-input">Enter your name</label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-action blue-grey lighten-4">
+                            <a href="#" id="name-submit" class="black-text">Sign in as player 1</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container" id="waiting-message" style="display: none;">
+            <div class="row">
+                <div class="col s12">
+                    <div class="card">
+                        <div class="card-content">
+                            <span class="card-title">Waiting for a second player</span>
+                            <br>
+                            <div class="progress">
+                                <div class="indeterminate"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container" id="choice-buttons" style="display: none;">
+            <div class="row">
+                <div class="col s12">
+                    <div class="card-title">Pick your weapon</div>
+                    <div class="card rps-button" id="rock">
+                        <div class="card-image">
+                            <img src="https://hypb.imgix.net/image/2017/06/dwayne-the-rock-johnson-is-our-generations-arnold-schwarzenegger-1.jpg">
+                            <span class="card-title">Dwayne "the Rock" Johnson</span>
+                        </div>
+                    </div>
+                    <div class="card rps-button" id="paper">
+                        <div class="card-image">
+                            <img src="https://ww2.kqed.org/wp-content/uploads/sites/12/2016/10/Atlanta.MAIN_-1038x576.jpg">
+                            <span class="card-title">Alfred "Paper Boi" Miles</span>
+                        </div>
+                    </div>
+                    <div class="card rps-button" id="scissors">
+                        <div class="card-image">
+                            <img src="https://www.bristolfilmfestival.com/wp-content/uploads/2018/01/Edward-Scissorhands.jpg">
+                            <span class="card-title">Edward Scissorhands</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="page-footer grey lighten-2" style="display: none;">
+        <div class="container">
+            <div class="row">
+                <div class="col s12">
+                    <ul>
+                        <li class="left">
+                            <span class="new badge" data-badge-caption="wins" id="wins-number">0</span>
+                        </li>
+                        <li class="right">
+                            <span class="new badge" data-badge-caption="losses" id="losses-number">0</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- <header>
         <h1>Rock Paper Scissors</h1>
         <form id="name-entry">
             <input type="text" id="name-input">
@@ -35,9 +129,17 @@
             <p></p>
         </div>
     </main>
+    <section>
+        <div id="chat">
+
+        </div>
+        <input type="text" id="chat-input">
+        <button id="send-chat">Send</button>
+    </section> -->
 
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
         crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
     <script src="assets/javascript/app.js"></script>
 </body>
 
