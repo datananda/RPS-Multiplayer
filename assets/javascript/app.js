@@ -148,10 +148,12 @@ database.ref().on("value", (snapshot) => {
                     const player1name = playerData.player1.name;
                     const player2name = playerData.player2.name;
                     const result = checkResult(player1choice, player2choice);
-                    $(`#${player1choice}`).clone().addClass("temp").prependTo("#waiting-message");
-                    $(`#waiting-message #${player1choice} .card-title`).text(`${player1name} chooses ${player1choice}`);
-                    $(`#${player2choice}`).clone().addClass("temp").appendTo("#waiting-message");
-                    $(`#waiting-message #${player2choice} .card-title`).text(`${player2name} chooses ${player2choice}`);
+                    console.log("player 1 name", player1name);
+                    console.log("player 2 name", player2name);
+                    $(`#${player1choice}`).clone().addClass("temp player1").prependTo("#waiting-message");
+                    $("#waiting-message .player1 .card-title").text(`${player1name} chooses ${player1choice}`);
+                    $(`#${player2choice}`).clone().addClass("temp player2").appendTo("#waiting-message");
+                    $("#waiting-message .player2 .card-title").text(`${player2name} chooses ${player2choice}`);
                     $(".progress").hide();
                     $("#waiting-message").show();
                     $("#waiting-message .card-content .card-title").text(`${result}`);
