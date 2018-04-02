@@ -10,6 +10,7 @@ main {
 
 .page-footer {
     padding-top: 14px;
+    height: 50px;
 }
 
 .page-footer .row {
@@ -37,9 +38,13 @@ span.badge {
     margin-top: 0;
 }
 
+.card .card-image {
+    position: static;
+}
+
 .card-image {
-    height: 115px;
     overflow: hidden;
+    height: 100%;
 }
 
 .card .card-image .card-title {
@@ -80,7 +85,7 @@ span.badge {
 }
 
 #chats {
-    height: 320px;
+    height: calc(100vh - 250px);
     overflow: auto;
 }
 
@@ -101,4 +106,41 @@ span.badge {
 .player2-chat {
     background-color: #eeeeee;
     float: left;
+}
+
+.remaining-height {
+    height: calc(100vh - 136px);
+}
+
+.remaining-height .row {
+    height: 100%;
+}
+
+#game-container,
+#choice-buttons,
+#waiting-message {
+    height: 100%;
+}
+
+.card {
+    height: 28%;
+}
+
+@media (min-width: 600px) {
+    .navbar-fixed {
+        height: 64px;
+    }
+    #chat-container {
+        border-left: 1px solid #eeeeee;
+        height: 100%;
+    }
+    #game-container {
+        padding-top: 25px;
+    }
+    .remaining-height {
+        height: calc(100vh - 114px);
+    }
+    #chats {
+        height: calc(100vh - 230px);
+    }
 }

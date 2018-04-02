@@ -118,8 +118,11 @@ database.ref().on("value", (snapshot) => {
         const currentTurn = snapshot.val().currentTurn;
         numActivePlayers = Object.keys(playerData).length;
         if (numActivePlayers === 1) {
-            $(".page-footer,.nav-content,#chat-container,#choice-buttons").hide();
+            $("#game-stats,.nav-content,#choice-buttons").hide();
             $("#game-container").show();
+            if (!window.matchMedia("(min-width: 600px)").matches) {
+                $("#chat-container").hide();
+            }
             const activePlayer = Object.keys(playerData)[0];
             const activePlayerNum = playerTextToNum(Object.keys(playerData)[0]);
             const otherPlayerNum = getOtherPlayerNum(activePlayerNum);
@@ -133,19 +136,21 @@ database.ref().on("value", (snapshot) => {
         } else if (numActivePlayers === 2) {
             if (currentPlayer) {
                 const currentPlayerNum = playerTextToNum(currentPlayer);
-                $(".page-footer,.nav-content").show();
+                $("#game-stats,.nav-content").show();
                 $("ul.tabs").tabs();
                 $("#wins-number").text(playerData[currentPlayer].wins);
                 $("#losses-number").text(playerData[currentPlayer].losses);
+                $("#send-chat").removeClass("disabled");
+                $("#chat-input").prop("disabled", false);
                 if (currentTurn === 3) {
                     const player1choice = playerData.player1.choice;
                     const player2choice = playerData.player2.choice;
                     const player1name = playerData.player1.name;
                     const player2name = playerData.player2.name;
                     const result = checkResult(player1choice, player2choice);
-                    $(`#${player1choice}`).clone().addClass("temp").prependTo("#waiting-message .col");
+                    $(`#${player1choice}`).clone().addClass("temp").prependTo("#waiting-message");
                     $(`#waiting-message #${player1choice} .card-title`).text(`${player1name} chooses ${player1choice}`);
-                    $(`#${player2choice}`).clone().addClass("temp").appendTo("#waiting-message .col");
+                    $(`#${player2choice}`).clone().addClass("temp").appendTo("#waiting-message");
                     $(`#waiting-message #${player2choice} .card-title`).text(`${player2name} chooses ${player2choice}`);
                     $(".progress").hide();
                     $("#waiting-message").show();
@@ -223,12 +228,12 @@ $(".rps-button").on("click", function () {
 
 $("#chat-tab").on("click", () => {
     $("#game-container").hide();
-    $("#chat-container").toggle();
+    $("#chat-container").show();
 });
 
 $("#game-tab").on("click", () => {
-    $("#game-container").toggle();
-    $("#chat-container").toggle();
+    $("#game-container").show();
+    $("#chat-container").hide();
 });
 
 window.addEventListener("unload", () => {
